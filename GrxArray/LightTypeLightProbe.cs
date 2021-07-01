@@ -5,10 +5,12 @@ using Vector3 = UnityEngine.Vector3;
 using Quaternion = UnityEngine.Quaternion;
 using FoxKit.Utils;
 using FoxLib;
+using UnityEditor;
 
 namespace GrxArrayTool
 {
-	public class ComponentLightProbe : MonoBehaviour
+    [Serializable]
+    public class ComponentLightProbe : MonoBehaviour
 	{
 		public uint vals4_2;
 		public uint LightFlags;
@@ -121,6 +123,7 @@ namespace GrxArrayTool
             Color innerEdge = new Color(1, 1, 0, 1);
             Color innerFace = new Color(1, 1, 0, 0.75f);
             DrawCubes(outerEdge, outerFace, innerEdge, innerFace);
+            Handles.Label(transform.position, gameObject.name);
         }
 	}
 

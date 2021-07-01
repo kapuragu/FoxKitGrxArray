@@ -1,9 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
 namespace GrxArrayTool
 {
+    [Serializable]
+    public class ComponentLightArray : MonoBehaviour
+    {
+        public ulong DataSetNameHash;
+        public string DataSetPath;
+        public List<ComponentPointLight> PointLights = new List<ComponentPointLight>();
+        public List<ComponentSpotLight> SpotLights = new List<ComponentSpotLight>();
+    }
+    [Serializable]
+    public class ComponentLightProbeArray : MonoBehaviour
+    {
+        public ulong DataSetNameHash;
+        public string DataSetPath;
+        public List<ComponentLightProbe> LightProbes = new List<ComponentLightProbe>();
+    }
+
     public enum FoxLightType
     {
         DataSetDefinition00 = 0x30304D43,
@@ -150,9 +167,9 @@ namespace GrxArrayTool
                         entryLength += light.StringName.Length + 1;
                     if (entryLength % 0x4 != 0)
                         entryLength += (0x4 - entryLength % 0x4);
-                    if (light.LightArea.Count > 0)
+                    if (light.LightArea != null)
                         entryLength += 0x28;
-                    if (light.IrradiationPoint.Count > 0)
+                    if (light.IrradiationPoint != null)
                         entryLength += 0x28;
                     writer.Write(entryLength); //entry size
                     light.Write(writer);
@@ -165,9 +182,9 @@ namespace GrxArrayTool
                         entryLength += light.StringName.Length + 1;
                     if (entryLength % 0x4 != 0)
                         entryLength += (0x4 - entryLength % 0x4);
-                    if (light.LightArea.Count > 0)
+                    if (light.LightArea != null)
                         entryLength += 0x28;
-                    if (light.IrradiationPoint.Count > 0)
+                    if (light.IrradiationPoint != null)
                         entryLength += 0x28;
                     writer.Write(entryLength); //entry size
                     light.Write(writer);

@@ -7,14 +7,17 @@ using Quaternion = UnityEngine.Quaternion;
 using FoxKit.Utils;
 using FoxLib;
 using UnityEngine;
+using UnityEditor;
 
 namespace GrxArrayTool
 {
+    [Serializable]
     public class ComponentSpotLight : MonoBehaviour
     {
         public uint vals4_2;
         public uint LightFlags;
         public uint vals4_4;
+        public ComponentReachPoint ReachPoint;
         public float OuterRange;
         public float InnerRange;
         public float UmbraAngle;
@@ -37,8 +40,12 @@ namespace GrxArrayTool
         public float vals11_3;
         public uint LodRadiusLevel;
         public uint vals12_2;
+        public ComponentLightArea LightArea;
+        public ComponentIrradiationPoint IrradiationPoint;
         void OnDrawGizmos()
-        {}
+        {
+            Handles.Label(transform.position, gameObject.name);
+        }
     }
 
     public class LightTypeSpotLight
@@ -73,8 +80,8 @@ namespace GrxArrayTool
         public float vals11_3 { get; set; }
         public uint LodRadiusLevel { get; set; }
         public uint vals12_2 { get; set; }
-        public List<ExtraTransform> LightArea = new List<ExtraTransform>();
-        public List<ExtraTransform> IrradiationPoint = new List<ExtraTransform>();
+        public ExtraTransform LightArea { get; set; }
+        public ExtraTransform IrradiationPoint { get; set; }
         public void Read(BinaryReader reader)
         {
             HashName = reader.ReadUInt64(); //Doesn't look like the PathCode64 of the .fox2?
@@ -132,18 +139,17 @@ namespace GrxArrayTool
                     reader.BaseStream.Position += 0x4 - reader.BaseStream.Position % 0x4;
             }
 
-            ExtraTransform LightAreaTrasform = new ExtraTransform();
+            LightArea = new ExtraTransform();
             if (offsetToLightArea > 0)
-            {
-                LightAreaTrasform.Read(reader);
-                LightArea.Add(LightAreaTrasform);
-            }
-            ExtraTransform IrradiationPointTransform = new ExtraTransform();
+                LightArea.Read(reader);
+            else
+                LightArea = null;
+
+            IrradiationPoint = new ExtraTransform();
             if (offsetToIrraditationTransform > 0)
-            {
-                IrradiationPointTransform.Read(reader);
-                IrradiationPoint.Add(IrradiationPointTransform);
-            }
+                IrradiationPoint.Read(reader);
+            else
+                IrradiationPoint = null;
 
             Log();
         }
@@ -166,7 +172,7 @@ namespace GrxArrayTool
             writer.Write(vals4_2);
             writer.Write(LightFlags);
             writer.Write(vals4_4);
-            if (LightArea.Count > 0)
+            if (LightArea!=null)
                 writer.Write(offsetToTransforms-0x10);
             else
                 writer.Write(0);
@@ -208,7 +214,7 @@ namespace GrxArrayTool
             writer.Write(LodRadiusLevel);
             writer.Write(vals12_2);
 
-            if (IrradiationPoint.Count > 0)
+            if (IrradiationPoint != null)
                 writer.Write((offsetToTransforms + 0x28) - 0x74);
             else
                 writer.Write(0);
@@ -220,15 +226,11 @@ namespace GrxArrayTool
                     writer.WriteZeroes(0x4 - (int)writer.BaseStream.Position % 0x4);
             }
 
-            foreach (var lightArea in LightArea)
-            {
-                lightArea.Write(writer);
-            }
+            if (LightArea != null)
+                LightArea.Write(writer);
 
-            foreach (var irradiationpoint in IrradiationPoint)
-            {
-                irradiationpoint.Write(writer);
-            }
+            if (IrradiationPoint != null)
+                IrradiationPoint.Write(writer);
 
             Log();
         }
@@ -249,15 +251,15 @@ namespace GrxArrayTool
             Console.WriteLine($"    vals11_1={vals11_1} vals11_2={vals11_2} vals11_3={vals11_3}");
             Console.WriteLine($"    LodRadiusLevel={LodRadiusLevel} vals12_2={vals12_2} vals11_3={vals11_3}");
 
-            foreach (var lightArea in LightArea)
+            if (LightArea != null)
             {
                 Console.WriteLine("        LightArea");
-                lightArea.Log();
+                LightArea.Log();
             }
-            foreach (var irradiationPoint in IrradiationPoint)
+            if (IrradiationPoint != null)
             {
                 Console.WriteLine("        IrradiationPoint");
-                irradiationPoint.Log();
+                IrradiationPoint.Log();
             }
         }
     }

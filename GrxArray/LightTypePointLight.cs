@@ -10,6 +10,15 @@ namespace GrxArrayTool
 {
     public class ComponentLightArea : MonoBehaviour
     {
+        void DrawShape(Color colorHard, Color colorSoft)
+        {
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.color = colorHard;
+            Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+            Gizmos.color = colorSoft;
+            Gizmos.DrawCube(Vector3.zero, Vector3.one);
+            Handles.Label(transform.position, gameObject.name);
+        }
         void OnDrawGizmosSelected()
         {
             DrawShape(Color.yellow + new Color(0.25f, 0.25f, 0.25f, 0.5f), new Color(1, 1, 0.5F, 0.25f));
@@ -18,17 +27,18 @@ namespace GrxArrayTool
         {
             DrawShape(Color.yellow, new Color(1, 1, 0, 0.25f));
         }
-        void DrawShape(Color colorHard, Color colorSoft)
-        {
-            Gizmos.matrix = transform.localToWorldMatrix;
-            Gizmos.color = colorHard;
-            Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
-            Gizmos.color = colorSoft;
-            Gizmos.DrawCube(Vector3.zero, Vector3.one);
-        }
     }
     public class ComponentIrradiationPoint : MonoBehaviour
     {
+        void DrawShape(Color colorHard)
+        {
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.color = colorHard;
+            Gizmos.DrawLine(Vector3.down, Vector3.up);
+            Gizmos.DrawLine(Vector3.right, Vector3.left);
+            Gizmos.DrawLine(Vector3.back, Vector3.forward);
+            Handles.Label(transform.position, gameObject.name);
+        }
         void OnDrawGizmosSelected()
         {
             DrawShape(Color.red + new Color(0.25f, 0.25f, 0.25f, 1));
@@ -37,18 +47,16 @@ namespace GrxArrayTool
         {
             DrawShape(Color.red);
         }
-        void DrawShape(Color colorHard)
-        {
-            Gizmos.matrix = transform.localToWorldMatrix;
-            Gizmos.color = colorHard;
-            Gizmos.DrawLine(Vector3.down, Vector3.up);
-            Gizmos.DrawLine(Vector3.right, Vector3.left);
-            Gizmos.DrawLine(Vector3.back, Vector3.forward);
-            Handles.Label(transform.position, " IRRADIATION");
-        }
     }
     public class ComponentReachPoint : MonoBehaviour
     {
+        void DrawShape(Color colorHard)
+        {
+            Gizmos.color = colorHard;
+            Gizmos.DrawLine(transform.position + Vector3.down, transform.position + Vector3.up);
+            Gizmos.DrawLine(transform.position + Vector3.right, transform.position + Vector3.left);
+            Gizmos.DrawLine(transform.position + Vector3.back, transform.position + Vector3.forward);
+        }
         void OnDrawGizmosSelected()
         {
             DrawShape(Color.blue + new Color(0.25f, 0.25f, 0.25f, 1));
@@ -56,21 +64,16 @@ namespace GrxArrayTool
         void OnDrawGizmos()
         {
             DrawShape(Color.blue);
-        }
-        void DrawShape(Color colorHard)
-        {
-            Gizmos.color = colorHard;
-            Gizmos.DrawLine(transform.position + Vector3.down, transform.position + Vector3.up);
-            Gizmos.DrawLine(transform.position + Vector3.right, transform.position + Vector3.left);
-            Gizmos.DrawLine(transform.position + Vector3.back, transform.position + Vector3.forward);
-            Handles.Label(transform.position, " REACH");
+            Handles.Label(transform.position, gameObject.name);
         }
     }
+    [Serializable]
     public class ComponentPointLight : MonoBehaviour
     {
         public uint vals4_2;
         public uint LightFlags;
         public uint vals4_4;
+        public ComponentReachPoint ReachPoint;
         public Color Color;
         public float Temperature;
         public float ColorDeflection;
@@ -83,8 +86,15 @@ namespace GrxArrayTool
         public float vals13;
         public uint vals7_1;
         public uint vals7_2;
+        public ComponentLightArea LightArea;
+        public ComponentIrradiationPoint IrradiationPoint;
+        void OnDrawGizmosSelected()
+        {
+        }
         void OnDrawGizmos()
-        {}
+        {
+            Handles.Label(transform.position, gameObject.name);
+        }
     }
 
     public class LightTypePointLight
@@ -108,8 +118,8 @@ namespace GrxArrayTool
         public float vals13 { get; set; }
         public uint vals7_1 { get; set; }
         public uint vals7_2 { get; set; }
-        public List<ExtraTransform> LightArea = new List<ExtraTransform>();
-        public List<ExtraTransform> IrradiationPoint = new List<ExtraTransform>();
+        public ExtraTransform LightArea { get; set; }
+        public ExtraTransform IrradiationPoint { get; set; }
         public void Read(BinaryReader reader)
         {
             HashName = reader.ReadUInt64(); //Doesn't look like the PathCode64 of the .fox2?
@@ -166,18 +176,17 @@ namespace GrxArrayTool
             Console.WriteLine($"    vals3_2={vals3_2} vals6={vals6} vals13={vals13}");
             Console.WriteLine($"    vals7_1={vals7_1} vals7_2={vals7_2}");
 
-            ExtraTransform LightAreaTrasform = new ExtraTransform();
+            LightArea = new ExtraTransform();
             if (offsetToLightArea > 0)
-            {
-                LightAreaTrasform.Read(reader);
-                LightArea.Add(LightAreaTrasform);
-            }
-            ExtraTransform IrradiationPointTransform = new ExtraTransform();
+                LightArea.Read(reader);
+            else
+                LightArea = null;
+
+            IrradiationPoint = new ExtraTransform();
             if (offsetToIrraditationTransform > 0)
-            {
-                IrradiationPointTransform.Read(reader);
-                IrradiationPoint.Add(IrradiationPointTransform);
-            }
+                IrradiationPoint.Read(reader);
+            else
+                IrradiationPoint = null;
 
             Log();
         }
@@ -200,7 +209,7 @@ namespace GrxArrayTool
             writer.Write(vals4_2);
             writer.Write(LightFlags);
             writer.Write(vals4_4);
-            if (LightArea.Count > 0)
+            if (LightArea != null)
                 writer.Write(offsetToTransforms-0x10);
             else
                 writer.Write(0);
@@ -227,7 +236,7 @@ namespace GrxArrayTool
             writer.Write(vals7_1);
             writer.Write(vals7_2);
 
-            if (IrradiationPoint.Count > 0)
+            if (IrradiationPoint != null)
                 writer.Write((offsetToTransforms + 0x28) - 0x4C);
             else
                 writer.Write(0);
@@ -239,15 +248,11 @@ namespace GrxArrayTool
                     writer.WriteZeroes(0x4 - (int)writer.BaseStream.Position % 0x4);
             }
 
-            foreach (var lightArea in LightArea)
-            {
-                lightArea.Write(writer);
-            }
+            if (LightArea != null)
+                LightArea.Write(writer);
 
-            foreach (var lightArea in IrradiationPoint)
-            {
-                lightArea.Write(writer);
-            }
+            if (IrradiationPoint != null)
+                IrradiationPoint.Write(writer);
 
             Log();
         }
@@ -262,15 +267,15 @@ namespace GrxArrayTool
             Console.WriteLine($"    vals5_3={vals5_3} vals5_4={vals5_4} vals3_1={vals3_1}");
             Console.WriteLine($"    vals3_2={vals3_2} vals6={vals6} vals13={vals13}");
             Console.WriteLine($"    vals7_1={vals7_1} vals7_2={vals7_2}");
-            foreach (var lightArea in LightArea)
+            if (LightArea != null)
             {
                 Console.WriteLine("        LightArea");
-                lightArea.Log();
+                LightArea.Log();
             }
-            foreach (var irradiationPoint in IrradiationPoint)
+            if (IrradiationPoint != null)
             {
                 Console.WriteLine("        IrradiationPoint");
-                irradiationPoint.Log();
+                IrradiationPoint.Log();
             }
         }
     }
