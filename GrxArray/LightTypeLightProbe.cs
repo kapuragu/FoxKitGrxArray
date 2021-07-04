@@ -7,7 +7,7 @@ using FoxKit.Utils;
 using FoxLib;
 using UnityEditor;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
     [Serializable]
     public class ComponentLightProbe : MonoBehaviour
@@ -146,7 +146,7 @@ namespace GrxArrayTool
         public short Priority { get; set; }
         public short ShapeType { get; set; } // shapeType? 0 - square, 1 - triangular prism, 2 - semi-cylindiral, 3 - half-square
         public short RelatedLightIndex { get; set; } // relatedLights index
-        public ushort SphericalHaromincsDataIndex { get; set; }
+        public ushort SHDataIndex { get; set; }
         public float LightSize { get; set; } // most time is 1
         public float u5 { get; set; } //most time is 0
         public string StringName { get; set; }
@@ -164,17 +164,15 @@ namespace GrxArrayTool
             InnerScaleYNegative = Half.ToHalf(reader.ReadUInt16());
             InnerScaleZNegative = Half.ToHalf(reader.ReadUInt16());
 
-            Scale = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-
-            Rotation = FoxUtils.FoxToUnity(new Core.Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
-
-            Translation = new Vector3(-reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            Scale = FoxUtils.FoxToUnity(new FoxLib.Core.Vector3(-reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
+            Rotation = FoxUtils.FoxToUnity(new FoxLib.Core.Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
+            Translation = FoxUtils.FoxToUnity(new FoxLib.Core.Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
 
             vals16 = reader.ReadSingle();
             Priority = reader.ReadInt16();
             ShapeType = reader.ReadInt16();
             RelatedLightIndex = reader.ReadInt16(); // related light id (TppLightProbeArray)
-            SphericalHaromincsDataIndex = reader.ReadUInt16(); // probe index used by shDatas and drawRejectionLevels (TppLightProbeArray)
+            SHDataIndex = reader.ReadUInt16(); // probe index used by shDatas and drawRejectionLevels (TppLightProbeArray)
             LightSize = reader.ReadSingle();
             u5 = reader.ReadSingle();
 
@@ -208,18 +206,18 @@ namespace GrxArrayTool
             writer.Write(Half.GetBytes((Half)InnerScaleZPositive)); writer.Write(Half.GetBytes((Half)InnerScaleXNegative));
             writer.Write(Half.GetBytes((Half)InnerScaleYNegative)); writer.Write(Half.GetBytes((Half)InnerScaleZNegative));
 
-            writer.Write(Scale.x); writer.Write(Scale.y); writer.Write(Scale.z);
-
-            Core.Quaternion newQuat = FoxUtils.UnityToFox(Rotation);
+            FoxLib.Core.Vector3 newScale = FoxUtils.UnityToFox(Scale);
+            writer.Write(-newScale.X); writer.Write(newScale.Y); writer.Write(newScale.Z);
+            FoxLib.Core.Quaternion newQuat = FoxUtils.UnityToFox(Rotation);
             writer.Write(newQuat.X); writer.Write(newQuat.Y); writer.Write(newQuat.Z); writer.Write(newQuat.W);
-
-            writer.Write(-Translation.x); writer.Write(Translation.y); writer.Write(Translation.z);
+            FoxLib.Core.Vector3 newTranslation = FoxUtils.UnityToFox(Translation);
+            writer.Write(newTranslation.X); writer.Write(newTranslation.Y); writer.Write(newTranslation.Z);
 
             writer.Write(vals16);
             writer.Write(Priority);
             writer.Write(ShapeType);
             writer.Write(RelatedLightIndex);
-            writer.Write(SphericalHaromincsDataIndex);
+            writer.Write(SHDataIndex);
             writer.Write(LightSize);
             writer.Write(u5);
             if (StringName != string.Empty)

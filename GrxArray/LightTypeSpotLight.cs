@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using Vector3 = UnityEngine.Vector3;
 using Color = UnityEngine.Color;
@@ -9,7 +8,7 @@ using FoxLib;
 using UnityEngine;
 using UnityEditor;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
     [Serializable]
     public class ComponentSpotLight : MonoBehaviour
@@ -91,11 +90,11 @@ namespace GrxArrayTool
             vals4_4 = reader.ReadUInt32();
             uint offsetToLightArea = reader.ReadUInt32();
 
-            Translation = new Vector3(-reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            Translation = FoxUtils.FoxToUnity(new FoxLib.Core.Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
 
-            ReachPoint = new Vector3(-reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            ReachPoint = FoxUtils.FoxToUnity(new FoxLib.Core.Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
 
-            Rotation = FoxUtils.FoxToUnity(new Core.Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
+            Rotation = FoxUtils.FoxToUnity(new FoxLib.Core.Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle())); ;
             Rotation *= Quaternion.Euler(new Vector3(90, 0, 0));
 
             OuterRange = Half.ToHalf(reader.ReadUInt16());
@@ -177,13 +176,13 @@ namespace GrxArrayTool
             else
                 writer.Write(0);
 
-            writer.Write(-Translation.x); writer.Write(Translation.y); writer.Write(Translation.z);
+            FoxLib.Core.Vector3 newTranslation = FoxUtils.UnityToFox(Translation);
+            writer.Write(newTranslation.X); writer.Write(newTranslation.Y); writer.Write(newTranslation.Z);
 
-            writer.Write(ReachPoint.x);
-            writer.Write(ReachPoint.y);
-            writer.Write(ReachPoint.z);
+            FoxLib.Core.Vector3 newReachPoint = FoxUtils.UnityToFox(ReachPoint);
+            writer.Write(newReachPoint.X); writer.Write(newReachPoint.Y); writer.Write(newReachPoint.Z);
 
-            Core.Quaternion newQuat = FoxUtils.UnityToFox(Rotation * Quaternion.Euler(new Vector3(-90, 0, 0)));
+            FoxLib.Core.Quaternion newQuat = FoxUtils.UnityToFox(Rotation * Quaternion.Euler(new Vector3(-90, 0, 0)));
             writer.Write(newQuat.X); writer.Write(newQuat.Y); writer.Write(newQuat.Z); writer.Write(newQuat.W);
 
             writer.Write(Half.GetBytes((Half)OuterRange));

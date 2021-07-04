@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.IO;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
     public static class Extensions
     {

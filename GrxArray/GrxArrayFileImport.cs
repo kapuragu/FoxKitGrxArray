@@ -1,11 +1,178 @@
 ﻿using UnityEngine;
 using System.IO;
 using UnityEditor;
+using Rotorz.Games.Collections;
+using System.Collections.Generic;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
 	public class GrxArrayFileImport : MonoBehaviour
 	{
+		[MenuItem("FoxKit/Export Lighting/Export GrxArray")]
+		private static void OnExportAsset()
+		{
+			GameObject obj = Selection.activeGameObject;
+			if (obj == null)
+				return;
+
+			ComponentLightArray lightArrayComponent = obj.GetComponent(typeof(ComponentLightArray)) as ComponentLightArray;
+			if (lightArrayComponent != null)
+			{
+				GrxArrayFile file = new GrxArrayFile();
+				file.DataSetNameHash = lightArrayComponent.DataSetNameHash;
+				file.DataSetPath = lightArrayComponent.DataSetPath;
+				foreach (ComponentPointLight point in lightArrayComponent.PointLights)
+				{
+					var writePoint = new LightTypePointLight();
+					writePoint.StringName = point.gameObject.name;
+					writePoint.vals4_2 = point.vals4_2;
+					writePoint.LightFlags = point.LightFlags;
+					writePoint.vals4_4 = point.vals4_4;
+					writePoint.Translation = point.transform.position;
+					writePoint.ReachPoint = point.ReachPoint.transform.position-point.transform.position;
+					writePoint.Color = point.Color;
+					writePoint.Temperature = point.Temperature;
+					writePoint.ColorDeflection = point.ColorDeflection;
+					writePoint.Lumen = point.Lumen;
+					writePoint.vals5_3 = point.vals5_3;
+					writePoint.vals5_4 = point.vals5_4;
+					writePoint.vals3_1 = point.vals3_1;
+					writePoint.vals3_2 = point.vals3_2;
+					writePoint.vals6 = point.vals6;
+					writePoint.vals13 = point.vals13;
+					writePoint.vals7_1 = point.vals7_1;
+					writePoint.vals7_2 = point.vals7_2;
+
+					if (point.LightArea == null)
+						writePoint.LightArea = null;
+					else
+					{
+						writePoint.LightArea = new ExtraTransform();
+						writePoint.LightArea.Translation = point.LightArea.transform.position;
+						writePoint.LightArea.Rotation = point.LightArea.transform.rotation;
+						writePoint.LightArea.Scale = point.LightArea.transform.localScale;
+					}
+					if (point.IrradiationPoint == null)
+						writePoint.IrradiationPoint = null;
+					else
+					{
+						writePoint.IrradiationPoint = new ExtraTransform();
+						writePoint.IrradiationPoint.Translation = point.IrradiationPoint.transform.position;
+						writePoint.IrradiationPoint.Rotation = point.IrradiationPoint.transform.rotation;
+						writePoint.IrradiationPoint.Scale = point.IrradiationPoint.transform.localScale;
+					}
+
+					file.PointLights.Add(writePoint);
+				}
+				foreach (ComponentSpotLight spot in lightArrayComponent.SpotLights)
+				{
+					var writeSpot = new LightTypeSpotLight();
+					writeSpot.StringName = spot.gameObject.name;
+					writeSpot.vals4_2 = spot.vals4_2;
+					writeSpot.LightFlags = spot.LightFlags;
+					writeSpot.vals4_4 = spot.vals4_4;
+					writeSpot.Translation = spot.transform.position;
+					writeSpot.ReachPoint = spot.ReachPoint.transform.position - spot.transform.position;
+					writeSpot.Rotation = spot.transform.rotation;
+					writeSpot.OuterRange = spot.OuterRange;
+					writeSpot.InnerRange = spot.InnerRange;
+					writeSpot.UmbraAngle = spot.UmbraAngle;
+					writeSpot.PenumbraAngle = spot.PenumbraAngle;
+					writeSpot.AttenuationExponent = spot.AttenuationExponent;
+					writeSpot.vals14_6 = spot.vals14_6;
+					writeSpot.Color = spot.Color;
+					writeSpot.Temperature = spot.Temperature;
+					writeSpot.ColorDeflection = spot.ColorDeflection;
+					writeSpot.Lumen = spot.Lumen;
+					writeSpot.vals10 = spot.vals10;
+					writeSpot.ShadowUmbraAngle = spot.ShadowUmbraAngle;
+					writeSpot.ShadowPenumbraAngle = spot.ShadowPenumbraAngle;
+					writeSpot.ShadowAttenuationExponent = spot.ShadowAttenuationExponent;
+					writeSpot.Dimmer = spot.Dimmer;
+					writeSpot.ShadowBias = spot.ShadowBias;
+					writeSpot.ViewBias = spot.ViewBias;
+					writeSpot.vals11_1 = spot.vals11_1;
+					writeSpot.vals11_2 = spot.vals11_2;
+					writeSpot.vals11_3 = spot.vals11_3;
+					writeSpot.LodRadiusLevel = spot.LodRadiusLevel;
+					writeSpot.vals12_2 = spot.vals12_2;
+
+					if (spot.LightArea == null)
+						writeSpot.LightArea = null;
+					else
+					{
+						writeSpot.LightArea = new ExtraTransform();
+						writeSpot.LightArea.Translation = spot.LightArea.transform.position;
+						writeSpot.LightArea.Rotation = spot.LightArea.transform.rotation;
+						writeSpot.LightArea.Scale = spot.LightArea.transform.localScale;
+					}
+					if (spot.IrradiationPoint == null)
+						writeSpot.IrradiationPoint = null;
+					else
+					{
+						writeSpot.IrradiationPoint = new ExtraTransform();
+						writeSpot.IrradiationPoint.Translation = spot.IrradiationPoint.transform.position;
+						writeSpot.IrradiationPoint.Rotation = spot.IrradiationPoint.transform.rotation;
+						writeSpot.IrradiationPoint.Scale = spot.IrradiationPoint.transform.localScale;
+					}
+
+					file.SpotLights.Add(writeSpot);
+				}
+
+				var assetPath = EditorUtility.SaveFilePanel("Export asset", "", lightArrayComponent.gameObject.name, "grxla");
+				if (string.IsNullOrEmpty(assetPath))
+					return;
+
+				using (BinaryWriter writer = new BinaryWriter(new FileStream(assetPath, FileMode.Create)))
+				{
+					file.Write(writer);
+				}
+			}
+
+			ComponentLightProbeArray probeArrayComponent = obj.GetComponent(typeof(ComponentLightProbeArray)) as ComponentLightProbeArray;
+			if (probeArrayComponent != null)
+			{
+				GrxArrayFile file = new GrxArrayFile();
+				file.DataSetNameHash = probeArrayComponent.DataSetNameHash;
+				file.DataSetPath = probeArrayComponent.DataSetPath;
+				foreach (ComponentLightProbe probe in probeArrayComponent.LightProbes)
+                {
+					var writeProbe = new LightTypeLightProbe();
+					writeProbe.StringName = probe.gameObject.name;
+					writeProbe.vals4_2 = probe.vals4_2;
+					writeProbe.LightFlags = probe.LightFlags;
+					writeProbe.vals4_4 = probe.vals4_4;
+					writeProbe.InnerScaleXPositive = probe.InnerScaleNegative.x;
+					writeProbe.InnerScaleYPositive = probe.InnerScalePositive.y;
+					writeProbe.InnerScaleZPositive = probe.InnerScalePositive.z;
+					writeProbe.InnerScaleXNegative = probe.InnerScalePositive.x;
+					writeProbe.InnerScaleYNegative = probe.InnerScaleNegative.y;
+					writeProbe.InnerScaleZNegative = probe.InnerScaleNegative.z;
+					writeProbe.Scale = probe.gameObject.transform.localScale;
+					writeProbe.Rotation = probe.gameObject.transform.rotation;
+					writeProbe.Translation = probe.gameObject.transform.position;
+					writeProbe.vals16 = probe.vals16;
+					writeProbe.Priority = probe.Priority;
+					writeProbe.ShapeType = probe.ShapeType;
+					writeProbe.RelatedLightIndex = probe.RelatedLightIndex;
+					writeProbe.SHDataIndex = probe.SHDataIndex;
+					writeProbe.LightSize = probe.LightSize;
+					writeProbe.u5 = probe.u5;
+
+					file.LightProbes.Add(writeProbe);
+				}
+
+				var assetPath = EditorUtility.SaveFilePanel("Export asset", "", probeArrayComponent.gameObject.name, "grxla");
+				if (string.IsNullOrEmpty(assetPath))
+					return;
+
+				using (BinaryWriter writer = new BinaryWriter(new FileStream(assetPath, FileMode.Create)))
+				{
+					file.Write(writer);
+				}
+			}
+
+		}
 		[MenuItem("FoxKit/Import Lighting/Import GrxArray")]
 		private static void OnImportAsset()
 		{
@@ -243,7 +410,7 @@ namespace GrxArrayTool
 					component.Priority = lightProbe.Priority;
 					component.ShapeType = lightProbe.ShapeType;
 					component.RelatedLightIndex = lightProbe.RelatedLightIndex;
-					component.SHDataIndex = lightProbe.SphericalHaromincsDataIndex;
+					component.SHDataIndex = lightProbe.SHDataIndex;
 					component.LightSize = lightProbe.LightSize;
 					component.u5 = lightProbe.u5;
 

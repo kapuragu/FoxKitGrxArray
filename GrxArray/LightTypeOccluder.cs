@@ -2,7 +2,7 @@
 using System.IO;
 using Vector4 = UnityEngine.Vector4;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
     public class LightTypeOccluder
     {

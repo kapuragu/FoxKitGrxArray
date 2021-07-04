@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using Vector3 = UnityEngine.Vector3;
 using Color = UnityEngine.Color;
 using UnityEngine;
 using UnityEditor;
+using FoxKit.Utils;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
     public class ComponentLightArea : MonoBehaviour
     {
@@ -129,13 +129,13 @@ namespace GrxArrayTool
             vals4_4 = reader.ReadUInt32();
             uint offsetToLightArea = reader.ReadUInt32();
 
-            Translation = new Vector3(-reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            Translation = FoxUtils.FoxToUnity(new FoxLib.Core.Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
 
-            ReachPoint = new Vector3(
-                -(Half.ToHalf(reader.ReadUInt16())),
+            ReachPoint = FoxUtils.FoxToUnity( new FoxLib.Core.Vector3(
+                Half.ToHalf(reader.ReadUInt16()),
                 Half.ToHalf(reader.ReadUInt16()),
                 Half.ToHalf(reader.ReadUInt16())
-            );
+            ));
 
             Color = new Color(
                 Half.ToHalf(reader.ReadUInt16()),
@@ -214,15 +214,17 @@ namespace GrxArrayTool
             else
                 writer.Write(0);
 
-            writer.Write(-Translation.x); writer.Write(Translation.y); writer.Write(Translation.z);
-            writer.Write(Half.GetBytes(-(Half)ReachPoint.x)); 
-            writer.Write(Half.GetBytes(-(Half)ReachPoint.y)); 
-            writer.Write(Half.GetBytes(-(Half)ReachPoint.z));
+            FoxLib.Core.Vector3 newTranslation = FoxUtils.UnityToFox(Translation);
+            writer.Write(newTranslation.X); writer.Write(newTranslation.Y); writer.Write(newTranslation.Z);
+            FoxLib.Core.Vector3 newReachPoint = FoxUtils.UnityToFox(ReachPoint);
+            writer.Write(Half.GetBytes((Half)newReachPoint.X)); 
+            writer.Write(Half.GetBytes((Half)newReachPoint.Y)); 
+            writer.Write(Half.GetBytes((Half)newReachPoint.Z));
 
-            writer.Write(Half.GetBytes(-(Half)Color.r));
-            writer.Write(Half.GetBytes(-(Half)Color.g));
-            writer.Write(Half.GetBytes(-(Half)Color.b));
-            writer.Write(Half.GetBytes(-(Half)Color.a));
+            writer.Write(Half.GetBytes((Half)Color.r));
+            writer.Write(Half.GetBytes((Half)Color.g));
+            writer.Write(Half.GetBytes((Half)Color.b));
+            writer.Write(Half.GetBytes((Half)Color.a));
 
             writer.Write(Half.GetBytes((Half)Temperature));
             writer.Write(ColorDeflection);

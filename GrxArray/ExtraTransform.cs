@@ -4,7 +4,7 @@ using System.IO;
 using Vector3 = UnityEngine.Vector3;
 using Quaternion = UnityEngine.Quaternion;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
     public class ExtraTransform
     {
@@ -14,17 +14,19 @@ namespace GrxArrayTool
 
         public virtual void Read(BinaryReader reader)
         {
-            Scale = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-            Rotation = FoxUtils.FoxToUnity(new Core.Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
-            Translation = new Vector3(-reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            Scale = FoxUtils.FoxToUnity(new FoxLib.Core.Vector3(-reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
+            Rotation = FoxUtils.FoxToUnity(new FoxLib.Core.Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
+            Translation = FoxUtils.FoxToUnity(new FoxLib.Core.Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
         }
 
         public virtual void Write(BinaryWriter writer)
         {
-            writer.Write(Scale.x); writer.Write(Scale.y); writer.Write(Scale.z);
-            Core.Quaternion newQuat = FoxUtils.UnityToFox(Rotation);
+            FoxLib.Core.Vector3 newScale = FoxUtils.UnityToFox(Scale);
+            writer.Write(-newScale.X); writer.Write(newScale.Y); writer.Write(newScale.Z);
+            FoxLib.Core.Quaternion newQuat = FoxUtils.UnityToFox(Rotation);
             writer.Write(newQuat.X); writer.Write(newQuat.Y); writer.Write(newQuat.Z); writer.Write(newQuat.W);
-            writer.Write(-Translation.x); writer.Write(Translation.y); writer.Write(Translation.z);
+            FoxLib.Core.Vector3 newTranslation= FoxUtils.UnityToFox(Translation);
+            writer.Write(newTranslation.X); writer.Write(newTranslation.Y); writer.Write(newTranslation.Z);
         }
         public virtual void Log()
         {

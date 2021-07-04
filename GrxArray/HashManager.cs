@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
     public class HashManager
     {

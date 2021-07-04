@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace GrxArrayTool
+namespace FoxKit.Modules.GrxArrayTool
 {
     [Serializable]
     public class ComponentLightArray : MonoBehaviour
