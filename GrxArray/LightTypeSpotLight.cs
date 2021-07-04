@@ -13,36 +13,48 @@ namespace FoxKit.Modules.GrxArrayTool
     [Serializable]
     public class ComponentSpotLight : MonoBehaviour
     {
-        public uint vals4_2;
+        public uint Flags1;
         public uint LightFlags;
-        public uint vals4_4;
-        public ComponentReachPoint ReachPoint;
+        public uint Flags2;
+        public Vector3 ReachPoint;
         public float OuterRange;
         public float InnerRange;
         public float UmbraAngle;
         public float PenumbraAngle;
         public float AttenuationExponent;
-        public float vals14_6;
+        public float Dimmer;
         public Color Color;
         public float Temperature;
         public float ColorDeflection; // inconsistency with pointlight having it as a float makes me doubt this is colordeflection too
         public float Lumen;
-        public float vals10;
+        public float LightSize;
         public float ShadowUmbraAngle;
         public float ShadowPenumbraAngle;
         public float ShadowAttenuationExponent;
-        public float Dimmer;
         public float ShadowBias;
         public float ViewBias;
-        public float vals11_1;
-        public float vals11_2;
-        public float vals11_3;
+        public float PowerScale;
+        public float LodFarSize;
+        public float LodNearSize;
+        public float LodShadowDrawRate;
         public uint LodRadiusLevel;
-        public uint vals12_2;
+        public uint LodFadeType;
         public ComponentLightArea LightArea;
         public ComponentIrradiationPoint IrradiationPoint;
+        void DrawShape(Color colorHard)
+        {
+            Gizmos.color = colorHard;
+            Gizmos.DrawLine(transform.position + ReachPoint + Vector3.down, transform.position + ReachPoint + Vector3.up);
+            Gizmos.DrawLine(transform.position + ReachPoint + Vector3.right, transform.position + ReachPoint + Vector3.left);
+            Gizmos.DrawLine(transform.position + ReachPoint + Vector3.back, transform.position + ReachPoint + Vector3.forward);
+        }
+        void OnDrawGizmosSelected()
+        {
+            DrawShape(Color.blue + new Color(0.25f, 0.25f, 0.25f, 1));
+        }
         void OnDrawGizmos()
         {
+            DrawShape(Color.blue);
             Handles.Label(transform.position, gameObject.name);
         }
     }
@@ -51,9 +63,9 @@ namespace FoxKit.Modules.GrxArrayTool
     {
         public ulong HashName { get; set; }
         public string StringName { get; set; }
-        public uint vals4_2 { get; set; } // Different in GZ
+        public uint Flags1 { get; set; } // Different in GZ
         public uint LightFlags { get; set; }
-        public uint vals4_4 { get; set; } // Sometimes different in GZ?
+        public uint Flags2 { get; set; } // Sometimes different in GZ?
         public Vector3 Translation { get; set; }
         public Vector3 ReachPoint { get; set; }
         public Quaternion Rotation { get; set; }
@@ -62,32 +74,32 @@ namespace FoxKit.Modules.GrxArrayTool
         public float UmbraAngle { get; set; }
         public float PenumbraAngle { get; set; }
         public float AttenuationExponent { get; set; }
-        public float vals14_6 { get; set; }
+        public float Dimmer { get; set; }
         public Color Color { get; set; }
         public float Temperature { get; set; }
-        public float ColorDeflection { get; set; } // inconsistency with pointlight having it as a float makes me doubt this is colordeflection too
+        public float ColorDeflection { get; set; }
         public float Lumen { get; set; }
-        public float vals10 { get; set; }
+        public float LightSize { get; set; }
         public float ShadowUmbraAngle { get; set; }
         public float ShadowPenumbraAngle { get; set; }
         public float ShadowAttenuationExponent { get; set; }
-        public float Dimmer { get; set; }
         public float ShadowBias { get; set; }
         public float ViewBias { get; set; }
-        public float vals11_1 { get; set; }
-        public float vals11_2 { get; set; }
-        public float vals11_3 { get; set; }
+        public float PowerScale { get; set; }
+        public float LodFarSize { get; set; }
+        public float LodNearSize { get; set; }
+        public float LodShadowDrawRate { get; set; }
         public uint LodRadiusLevel { get; set; }
-        public uint vals12_2 { get; set; }
+        public uint LodFadeType { get; set; }
         public ExtraTransform LightArea { get; set; }
         public ExtraTransform IrradiationPoint { get; set; }
         public void Read(BinaryReader reader)
         {
             HashName = reader.ReadUInt64(); //Doesn't look like the PathCode64 of the .fox2?
             uint offsetToString = reader.ReadUInt32();
-            vals4_2 = reader.ReadUInt32();
+            Flags1 = reader.ReadUInt32();
             LightFlags = reader.ReadUInt32();
-            vals4_4 = reader.ReadUInt32();
+            Flags2 = reader.ReadUInt32();
             uint offsetToLightArea = reader.ReadUInt32();
 
             Translation = FoxUtils.FoxToUnity(new FoxLib.Core.Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
@@ -102,7 +114,7 @@ namespace FoxKit.Modules.GrxArrayTool
             UmbraAngle = Half.ToHalf(reader.ReadUInt16());
             PenumbraAngle = Half.ToHalf(reader.ReadUInt16());
             AttenuationExponent = Half.ToHalf(reader.ReadUInt16());
-            vals14_6 = Half.ToHalf(reader.ReadUInt16());
+            Dimmer = Half.ToHalf(reader.ReadUInt16());
 
             Color = new Color(
                 Half.ToHalf(reader.ReadUInt16()),
@@ -114,18 +126,18 @@ namespace FoxKit.Modules.GrxArrayTool
             Temperature = Half.ToHalf(reader.ReadUInt16());
             ColorDeflection = Half.ToHalf(reader.ReadUInt16());
             Lumen = reader.ReadSingle();
-            vals10 = Half.ToHalf(reader.ReadUInt16());
+            LightSize = Half.ToHalf(reader.ReadUInt16());
             ShadowUmbraAngle = Half.ToHalf(reader.ReadUInt16());
             ShadowPenumbraAngle = Half.ToHalf(reader.ReadUInt16());
             ShadowAttenuationExponent = Half.ToHalf(reader.ReadUInt16());
-            Dimmer = Half.ToHalf(reader.ReadUInt16());
             ShadowBias = Half.ToHalf(reader.ReadUInt16());
             ViewBias = Half.ToHalf(reader.ReadUInt16());
-            vals11_1 = Half.ToHalf(reader.ReadUInt16());
-            vals11_2 = Half.ToHalf(reader.ReadUInt16());
-            vals11_3 = Half.ToHalf(reader.ReadUInt16());
+            PowerScale = Half.ToHalf(reader.ReadUInt16());
+            LodFarSize = Half.ToHalf(reader.ReadUInt16());
+            LodNearSize = Half.ToHalf(reader.ReadUInt16());
+            LodShadowDrawRate = Half.ToHalf(reader.ReadUInt16());
             LodRadiusLevel = reader.ReadUInt32();
-            vals12_2 = reader.ReadUInt32();
+            LodFadeType = reader.ReadUInt32();
 
             uint offsetToIrraditationTransform = reader.ReadUInt32();
 
@@ -168,9 +180,9 @@ namespace FoxKit.Modules.GrxArrayTool
                 writer.Write(HashName);
                 writer.Write(0);
             }
-            writer.Write(vals4_2);
+            writer.Write(Flags1);
             writer.Write(LightFlags);
-            writer.Write(vals4_4);
+            writer.Write(Flags2);
             if (LightArea!=null)
                 writer.Write(offsetToTransforms-0x10);
             else
@@ -190,7 +202,7 @@ namespace FoxKit.Modules.GrxArrayTool
             writer.Write(Half.GetBytes((Half)UmbraAngle));
             writer.Write(Half.GetBytes((Half)PenumbraAngle));
             writer.Write(Half.GetBytes((Half)AttenuationExponent));
-            writer.Write(Half.GetBytes((Half)vals14_6));
+            writer.Write(Half.GetBytes((Half)Dimmer));
 
             writer.Write(Half.GetBytes(-(Half)Color.r));
             writer.Write(Half.GetBytes(-(Half)Color.g));
@@ -200,18 +212,18 @@ namespace FoxKit.Modules.GrxArrayTool
             writer.Write(Half.GetBytes((Half)Temperature));
             writer.Write(Half.GetBytes((Half)ColorDeflection));
             writer.Write(Lumen);
-            writer.Write(Half.GetBytes((Half)vals10));
+            writer.Write(Half.GetBytes((Half)LightSize));
             writer.Write(Half.GetBytes((Half)ShadowUmbraAngle));
             writer.Write(Half.GetBytes((Half)ShadowPenumbraAngle));
             writer.Write(Half.GetBytes((Half)ShadowAttenuationExponent));
-            writer.Write(Half.GetBytes((Half)Dimmer));
             writer.Write(Half.GetBytes((Half)ShadowBias));
             writer.Write(Half.GetBytes((Half)ViewBias));
-            writer.Write(Half.GetBytes((Half)vals11_1));
-            writer.Write(Half.GetBytes((Half)vals11_2));
-            writer.Write(Half.GetBytes((Half)vals11_3));
+            writer.Write(Half.GetBytes((Half)PowerScale));
+            writer.Write(Half.GetBytes((Half)LodFarSize));
+            writer.Write(Half.GetBytes((Half)LodNearSize));
+            writer.Write(Half.GetBytes((Half)LodShadowDrawRate));
             writer.Write(LodRadiusLevel);
-            writer.Write(vals12_2);
+            writer.Write(LodFadeType);
 
             if (IrradiationPoint != null)
                 writer.Write((offsetToTransforms + 0x28) - 0x74);
@@ -236,19 +248,19 @@ namespace FoxKit.Modules.GrxArrayTool
         public void Log()
         {
             Console.WriteLine($"Spotlight entry StrCode64={HashName} StringName='{StringName}'");
-            Console.WriteLine($"    vals4_2={vals4_2} LightFlags={LightFlags} vals4_4={vals4_4}");
+            Console.WriteLine($"    vals4_2={Flags1} LightFlags={LightFlags} vals4_4={Flags2}");
             Console.WriteLine($"    Translation X={Translation.x} Y={Translation.y} Z={Translation.z}");
             Console.WriteLine($"    ReachPoint X={ReachPoint.x} Y={ReachPoint.y} Z={ReachPoint.z}");
             Console.WriteLine($"    Rotation X={Rotation.x} Y={Rotation.y} Z={Rotation.z} W={Rotation.w}");
             Console.WriteLine($"    OuterRange={OuterRange} InnerRange={InnerRange}");
             Console.WriteLine($"    UmbraAngle={UmbraAngle} PenumbraAngle={PenumbraAngle}");
-            Console.WriteLine($"    AttenuationExponent={AttenuationExponent} vals14_6={vals14_6}");
+            Console.WriteLine($"    AttenuationExponent={AttenuationExponent} vals14_6={Dimmer}");
             Console.WriteLine($"    Color X={Color.r} Y={Color.g} Z={Color.b} W={Color.a}");
-            Console.WriteLine($"    Temperature={Temperature} ColorDeflection={ColorDeflection} Lumen={Lumen} vals10={vals10}");
+            Console.WriteLine($"    Temperature={Temperature} ColorDeflection={ColorDeflection} Lumen={Lumen} vals10={LightSize}");
             Console.WriteLine($"    ShadowUmbraAngle={ShadowUmbraAngle} ShadowPenumbraAngle={ShadowPenumbraAngle} ");
-            Console.WriteLine($"    Dimmer={Dimmer} ShadowBias={ShadowBias} ViewBias={ViewBias}");
-            Console.WriteLine($"    vals11_1={vals11_1} vals11_2={vals11_2} vals11_3={vals11_3}");
-            Console.WriteLine($"    LodRadiusLevel={LodRadiusLevel} vals12_2={vals12_2} vals11_3={vals11_3}");
+            Console.WriteLine($"    Dimmer={ShadowBias} ShadowBias={ViewBias} ViewBias={PowerScale}");
+            Console.WriteLine($"    vals11_1={LodFarSize} vals11_2={LodNearSize} vals11_3={LodShadowDrawRate}");
+            Console.WriteLine($"    LodRadiusLevel={LodRadiusLevel} vals12_2={LodFadeType} vals11_3={LodShadowDrawRate}");
 
             if (LightArea != null)
             {
